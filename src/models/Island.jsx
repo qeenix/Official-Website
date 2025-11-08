@@ -71,36 +71,53 @@ const Island = ({ isRotating, setIsRotating, setCurrentStage, ...props }) => {
     }
   };
 
-  useFrame(() => {
-    if (!isRotating) {
-      rotationSpeed.current *= dampingFactor;
-      if (Math.abs(rotationSpeed.current) < 0.0001) {
-        rotationSpeed.current = 0;
-      }
-      islandRef.current.rotation.y += rotationSpeed.current;
-    } else {
-      const rotation = islandRef.current.rotation.y;
-
-      const nomalizedRotation =
-        ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-      switch (true) {
-        case nomalizedRotation >= 5.45 && nomalizedRotation <= 5.85:
-          setCurrentStage(4);
-          break;
-        case nomalizedRotation >= 0.85 && nomalizedRotation <= 1.3:
-          setCurrentStage(3);
-          break;
-        case nomalizedRotation >= 2.4 && nomalizedRotation <= 2.6:
-          setCurrentStage(2);
-          break;
-        case nomalizedRotation >= 4.25 && nomalizedRotation <= 4.75:
-          setCurrentStage(1);
-          break;
-        default:
-          setCurrentStage(null);
-      }
+useFrame(() => {
+  if (!isRotating) {
+    rotationSpeed.current *= dampingFactor;
+    if (Math.abs(rotationSpeed.current) < 0.0001) {
+      rotationSpeed.current = 0;
     }
-  });
+    islandRef.current.rotation.y += rotationSpeed.current;
+  } else {
+    const rotation = islandRef.current.rotation.y;
+
+    // Normalize rotation to stay within [0, 2π]
+    const normalizedRotation =
+      ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+    // Divide full circle (2π) into 8 equal sections (π/4 each)
+    const section = Math.PI / 4;
+
+    switch (true) {
+      case normalizedRotation >= 0 && normalizedRotation < section:
+        setCurrentStage(6);
+        break;
+      case normalizedRotation >= section && normalizedRotation < 2 * section:
+        setCurrentStage(5);
+        break;
+      case normalizedRotation >= 2 * section && normalizedRotation < 3 * section:
+        setCurrentStage(4);
+        break;
+      case normalizedRotation >= 3 * section && normalizedRotation < 4 * section:
+        setCurrentStage(3);
+        break;
+      case normalizedRotation >= 4 * section && normalizedRotation < 5 * section:
+        setCurrentStage(2);
+        break;
+      case normalizedRotation >= 5 * section && normalizedRotation < 6 * section:
+        setCurrentStage(1);
+        break;
+      case normalizedRotation >= 6 * section && normalizedRotation < 7 * section:
+        setCurrentStage(8);
+        break;
+      case normalizedRotation >= 7 * section && normalizedRotation <= 2 * Math.PI:
+        setCurrentStage(7);
+        break;
+      default:
+        setCurrentStage(null);
+    }
+  }
+});
 
   useEffect(() => {
     const canvas = gl.domElement;
